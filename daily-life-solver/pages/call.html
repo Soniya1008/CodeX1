@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Call — DailySolve</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    .dialpad {
+      display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;
+      max-width:300px; margin:24px auto 0;
+    }
+    .dial-key {
+      aspect-ratio:1; border-radius:50%; background:var(--bg);
+      border:1px solid var(--border); display:flex; flex-direction:column;
+      align-items:center; justify-content:center; cursor:pointer;
+      transition:all 0.15s; font-family:var(--font-head);
+      font-size:1.3rem; font-weight:700; user-select:none;
+    }
+    .dial-key:hover { background:var(--surface2); border-color:var(--accent3); }
+    .dial-key:active { transform:scale(0.92); }
+    .dial-sub { font-size:0.55rem; color:var(--muted); letter-spacing:1px; font-weight:400; }
+    .dial-display {
+      text-align:center; font-family:var(--font-head);
+      font-size:2rem; font-weight:700; letter-spacing:2px;
+      margin:20px 0; min-height:48px; color:var(--text);
+    }
+    .dial-actions { display:flex; justify-content:center; gap:16px; margin-top:24px; }
+    .dial-call {
+      width:64px; height:64px; border-radius:50%; background:var(--accent2);
+      border:none; font-size:1.5rem; cursor:pointer; display:flex;
+      align-items:center; justify-content:center;
+      box-shadow:0 0 30px rgba(37,211,102,0.4);
+      transition:transform 0.2s, box-shadow 0.2s;
+    }
+    .dial-call:hover { transform:scale(1.08); box-shadow:0 0 50px rgba(37,211,102,0.6); }
+    .dial-del {
+      width:64px; height:64px; border-radius:50%; background:var(--surface);
+      border:1px solid var(--border); font-size:1.3rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:background 0.2s;
+    }
+    .dial-del:hover { background:var(--surface2); }
+
+    .emergency-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .em-card {
+      background:var(--bg); border:1px solid rgba(255,80,80,0.2);
+      border-radius:14px; padding:20px 16px; text-align:center;
+      text-decoration:none; color:var(--text); transition:all 0.2s;
+    }
+    .em-card:hover { border-color:rgba(255,80,80,0.5); background:rgba(255,80,80,0.05); transform:translateY(-2px); }
+    .em-num { font-family:var(--font-head); font-size:1.5rem; font-weight:800; color:#ff8080; }
+    .em-name { font-size:0.82rem; color:var(--muted); margin-top:4px; }
+    .em-icon { font-size:1.5rem; margin-bottom:8px; }
+
+    .saved-list { display:flex; flex-direction:column; gap:10px; }
+    .saved-item {
+      display:flex; align-items:center; justify-content:space-between;
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:12px; padding:16px 18px;
+    }
+    .saved-left { display:flex; align-items:center; gap:14px; }
+    .saved-avatar {
+      width:42px; height:42px; border-radius:50%;
+      background:var(--surface2); display:flex; align-items:center;
+      justify-content:center; font-size:1.1rem;
+    }
+    .saved-name { font-weight:600; font-size:0.9rem; }
+    .saved-num  { font-size:0.8rem; color:var(--muted); }
+    .saved-actions { display:flex; gap:8px; }
+    .s-btn {
+      padding:8px 14px; border-radius:8px; font-size:0.8rem;
+      font-weight:600; border:none; cursor:pointer; transition:opacity 0.2s;
+      text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    }
+    .s-call { background:var(--accent3); color:#fff; }
+    .s-wa   { background:var(--accent2); color:#fff; }
+    .s-btn:hover { opacity:0.85; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="../index.html" class="logo">Daily<span>Solve</span></a>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="location.html">Location</a>
+      <a href="whatsapp.html">WhatsApp</a>
+      <a href="call.html" class="active">Call</a>
+    </nav>
+    <div class="header-cta" onclick="window.history.back()">← Back</div>
+  </header>
+
+  <div class="page-hero">
+    <h1>📞 Direct Call</h1>
+    <p>Dial any number instantly, call emergency services, or reach saved contacts with one tap.</p>
+  </div>
+
+  <div class="page-body">
+
+    <!-- DIALPAD -->
+    <div class="card" style="text-align:center;">
+      <h3 style="text-align:left;">🔢 Dial a Number</h3>
+      <div class="dial-display" id="dial-display">Enter Number</div>
+      <div class="dialpad">
+        <div class="dial-key" onclick="press('1')">1<span class="dial-sub"></span></div>
+        <div class="dial-key" onclick="press('2')">2<span class="dial-sub">ABC</span></div>
+        <div class="dial-key" onclick="press('3')">3<span class="dial-sub">DEF</span></div>
+        <div class="dial-key" onclick="press('4')">4<span class="dial-sub">GHI</span></div>
+        <div class="dial-key" onclick="press('5')">5<span class="dial-sub">JKL</span></div>
+        <div class="dial-key" onclick="press('6')">6<span class="dial-sub">MNO</span></div>
+        <div class="dial-key" onclick="press('7')">7<span class="dial-sub">PQRS</span></div>
+        <div class="dial-key" onclick="press('8')">8<span class="dial-sub">TUV</span></div>
+        <div class="dial-key" onclick="press('9')">9<span class="dial-sub">WXYZ</span></div>
+        <div class="dial-key" onclick="press('*')">*</div>
+        <div class="dial-key" onclick="press('0')">0<span class="dial-sub">+</span></div>
+        <div class="dial-key" onclick="press('#')">#</div>
+      </div>
+      <div class="dial-actions">
+        <button class="dial-del" onclick="deleteLast()">⌫</button>
+        <button class="dial-call" onclick="makeCall()">📞</button>
+      </div>
+    </div>
+
+    <!-- EMERGENCY -->
+    <div class="card">
+      <h3>🚨 Emergency Numbers (India)</h3>
+      <div class="emergency-grid" style="margin-top:16px;">
+        <a href="tel:112" class="em-card">
+          <div class="em-icon">🆘</div>
+          <div class="em-num">112</div>
+          <div class="em-name">National Emergency</div>
+        </a>
+        <a href="tel:100" class="em-card">
+          <div class="em-icon">👮</div>
+          <div class="em-num">100</div>
+          <div class="em-name">Police</div>
+        </a>
+        <a href="tel:101" class="em-card">
+          <div class="em-icon">🔥</div>
+          <div class="em-num">101</div>
+          <div class="em-name">Fire Brigade</div>
+        </a>
+        <a href="tel:108" class="em-card">
+          <div class="em-icon">🚑</div>
+          <div class="em-num">108</div>
+          <div class="em-name">Ambulance</div>
+        </a>
+        <a href="tel:1800114000" class="em-card">
+          <div class="em-icon">👩</div>
+          <div class="em-num">1091</div>
+          <div class="em-name">Women Helpline</div>
+        </a>
+        <a href="tel:1098" class="em-card">
+          <div class="em-icon">👶</div>
+          <div class="em-num">1098</div>
+          <div class="em-name">Child Helpline</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- SAVED CONTACTS -->
+    <div class="card">
+      <h3>📋 Quick Contacts</h3>
+      <p style="color:var(--muted);font-size:0.85rem;margin:8px 0 20px;">Tap call or WhatsApp to connect instantly.</p>
+      <div class="saved-list" id="contacts-list"></div>
+      <div style="margin-top:20px;">
+        <button class="action-btn full" onclick="addContact()">➕ Add Quick Contact</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let dialNum = '';
+
+    function press(d) {
+      if (dialNum.length >= 15) return;
+      dialNum += d;
+      document.getElementById('dial-display').textContent = dialNum || 'Enter Number';
+    }
+
+    function deleteLast() {
+      dialNum = dialNum.slice(0, -1);
+      document.getElementById('dial-display').textContent = dialNum || 'Enter Number';
+    }
+
+    function makeCall() {
+      if (!dialNum) { alert('Please enter a number.'); return; }
+      window.open(`tel:${dialNum}`, '_self');
+    }
+
+    // Quick contacts stored in localStorage
+    const DEFAULT_CONTACTS = [
+      { name: 'Mom', num: '9999999990', icon: '👩' },
+      { name: 'Dad', num: '9999999991', icon: '👨' },
+      { name: 'Doctor', num: '9999999992', icon: '🩺' },
+    ];
+
+    function loadContacts() {
+      try {
+        return JSON.parse(localStorage.getItem('quick_contacts')) || DEFAULT_CONTACTS;
+      } catch { return DEFAULT_CONTACTS; }
+    }
+
+    function saveContacts(c) {
+      localStorage.setItem('quick_contacts', JSON.stringify(c));
+    }
+
+    function renderContacts() {
+      const list = loadContacts();
+      const el = document.getElementById('contacts-list');
+      el.innerHTML = list.map((c,i) => `
+        <div class="saved-item">
+          <div class="saved-left">
+            <div class="saved-avatar">${c.icon}</div>
+            <div>
+              <div class="saved-name">${c.name}</div>
+              <div class="saved-num">${c.num}</div>
+            </div>
+          </div>
+          <div class="saved-actions">
+            <a href="tel:${c.num}" class="s-btn s-call">📞 Call</a>
+            <a href="https://wa.me/91${c.num}" target="_blank" class="s-btn s-wa">💬</a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addContact() {
+      const name = prompt('Contact name:');
+      if (!name) return;
+      const num = prompt('Phone number (10 digits, no country code):');
+      if (!num) return;
+      const contacts = loadContacts();
+      const icons = ['👤','🧑','👦','👧','👩','👨','🧔','🧓'];
+      contacts.push({ name, num, icon: icons[Math.floor(Math.random()*icons.length)] });
+      saveContacts(contacts);
+      renderContacts();
+    }
+
+    renderContacts();
+  </script>
+
+</body>
+</html>

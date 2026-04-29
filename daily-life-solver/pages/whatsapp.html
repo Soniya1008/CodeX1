@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WhatsApp — DailySolve</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    .tab-bar { display:flex; gap:8px; margin-bottom:24px; }
+    .tab {
+      flex:1; padding:12px; text-align:center; border-radius:10px;
+      background:var(--bg); border:1px solid var(--border); cursor:pointer;
+      font-weight:600; font-size:0.88rem; color:var(--muted);
+      transition: all 0.2s;
+    }
+    .tab.active { background:var(--accent2); color:#fff; border-color:var(--accent2); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .country-flag { font-size:1.1rem; margin-right:4px; }
+    .char-count { font-size:0.8rem; color:var(--muted); text-align:right; margin-top:4px; }
+    textarea {
+      width:100%; background:var(--bg); border:1px solid var(--border);
+      color:var(--text); border-radius:10px; padding:12px 16px;
+      font-size:0.95rem; font-family:var(--font-body); outline:none;
+      resize:vertical; min-height:100px; transition:border-color 0.2s;
+    }
+    textarea:focus { border-color:var(--accent2); }
+    .wa-preview {
+      background: #0d1117; border-radius: 16px; padding: 20px;
+      margin-top:16px; border:1px solid rgba(37,211,102,0.2);
+    }
+    .wa-bubble {
+      background: #005c4b; border-radius: 12px 12px 2px 12px;
+      padding: 12px 16px; max-width: 85%; margin-left:auto;
+      font-size:0.9rem; line-height:1.5; color:#e9edef;
+      word-break: break-word;
+    }
+    .wa-time { text-align:right; font-size:0.7rem; color:#8696a0; margin-top:6px; }
+    .group-contacts { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .gc-item {
+      display:flex; align-items:center; gap:10px;
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:10px; padding:14px; cursor:pointer;
+      transition:all 0.2s;
+    }
+    .gc-item:hover { border-color:var(--accent2); }
+    .gc-avatar {
+      width:36px; height:36px; border-radius:50%;
+      background:var(--surface2); display:flex; align-items:center;
+      justify-content:center; font-size:1.1rem; flex-shrink:0;
+    }
+    .gc-name { font-weight:600; font-size:0.88rem; }
+    .gc-num  { font-size:0.78rem; color:var(--muted); }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="../index.html" class="logo">Daily<span>Solve</span></a>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="location.html">Location</a>
+      <a href="whatsapp.html" class="active">WhatsApp</a>
+      <a href="call.html">Call</a>
+    </nav>
+    <div class="header-cta" onclick="window.history.back()">← Back</div>
+  </header>
+
+  <div class="page-hero">
+    <h1>💬 WhatsApp Tools</h1>
+    <p>Message, call or video call anyone on WhatsApp — even without saving their number.</p>
+  </div>
+
+  <div class="page-body">
+
+    <div class="card">
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchTab('message')">✉️ Message</div>
+        <div class="tab" onclick="switchTab('call')">📞 Voice Call</div>
+        <div class="tab" onclick="switchTab('video')">🎥 Video Call</div>
+        <div class="tab" onclick="switchTab('group')">👥 Quick Contacts</div>
+      </div>
+
+      <!-- MESSAGE TAB -->
+      <div class="tab-panel active" id="tab-message">
+        <h3>Send WhatsApp Message</h3>
+        <div class="input-group" style="margin-top:16px;">
+          <label>Country Code</label>
+          <select id="country-code">
+            <option value="91">🇮🇳 +91 India</option>
+            <option value="1">🇺🇸 +1 USA</option>
+            <option value="44">🇬🇧 +44 UK</option>
+            <option value="971">🇦🇪 +971 UAE</option>
+            <option value="61">🇦🇺 +61 Australia</option>
+            <option value="49">🇩🇪 +49 Germany</option>
+            <option value="33">🇫🇷 +33 France</option>
+            <option value="81">🇯🇵 +81 Japan</option>
+            <option value="86">🇨🇳 +86 China</option>
+            <option value="55">🇧🇷 +55 Brazil</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Phone Number (without leading 0)</label>
+          <input type="tel" id="wa-number" placeholder="e.g. 9876543210" />
+        </div>
+        <div class="input-group">
+          <label>Message (optional)</label>
+          <textarea id="wa-message" placeholder="Type your message here..." oninput="updatePreview()"></textarea>
+          <div class="char-count" id="char-count">0 / 500</div>
+        </div>
+        <div class="wa-preview">
+          <div class="wa-bubble" id="preview-bubble">Your message preview...</div>
+          <div class="wa-time" id="preview-time"></div>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="action-btn green full" onclick="openWhatsApp()">💬 Open WhatsApp Chat</button>
+        </div>
+      </div>
+
+      <!-- CALL TAB -->
+      <div class="tab-panel" id="tab-call">
+        <h3>WhatsApp Voice Call</h3>
+        <p style="color:var(--muted);font-size:0.9rem;margin:12px 0 20px;">Opens WhatsApp with the number ready to call. Works on mobile devices.</p>
+        <div class="input-group">
+          <label>Country Code</label>
+          <select id="call-code">
+            <option value="91">🇮🇳 +91 India</option>
+            <option value="1">🇺🇸 +1 USA</option>
+            <option value="44">🇬🇧 +44 UK</option>
+            <option value="971">🇦🇪 +971 UAE</option>
+            <option value="61">🇦🇺 +61 Australia</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Phone Number</label>
+          <input type="tel" id="call-number" placeholder="e.g. 9876543210" />
+        </div>
+        <button class="action-btn green full" onclick="waCall()">📞 Start WhatsApp Voice Call</button>
+      </div>
+
+      <!-- VIDEO TAB -->
+      <div class="tab-panel" id="tab-video">
+        <h3>WhatsApp Video Call</h3>
+        <p style="color:var(--muted);font-size:0.9rem;margin:12px 0 20px;">Opens WhatsApp with the number — you can then initiate a video call. Works on mobile.</p>
+        <div class="input-group">
+          <label>Country Code</label>
+          <select id="video-code">
+            <option value="91">🇮🇳 +91 India</option>
+            <option value="1">🇺🇸 +1 USA</option>
+            <option value="44">🇬🇧 +44 UK</option>
+            <option value="971">🇦🇪 +971 UAE</option>
+            <option value="61">🇦🇺 +61 Australia</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Phone Number</label>
+          <input type="tel" id="video-number" placeholder="e.g. 9876543210" />
+        </div>
+        <button class="action-btn green full" onclick="waVideo()">🎥 Start WhatsApp Video Call</button>
+      </div>
+
+      <!-- GROUP TAB -->
+      <div class="tab-panel" id="tab-group">
+        <h3>Quick WhatsApp Contacts</h3>
+        <p style="color:var(--muted);font-size:0.9rem;margin:12px 0 20px;">Frequently used or emergency WhatsApp contacts.</p>
+        <div class="group-contacts">
+          <div class="gc-item" onclick="quickWA('100','Police Help')">
+            <div class="gc-avatar">👮</div>
+            <div><div class="gc-num">WhatsApp Help</div><div class="gc-name">Police</div></div>
+          </div>
+          <div class="gc-item" onclick="quickWA('108','Ambulance')">
+            <div class="gc-avatar">🚑</div>
+            <div><div class="gc-num">+91 108</div><div class="gc-name">Ambulance</div></div>
+          </div>
+          <div class="gc-item" onclick="quickWA('1800114000','Women Helpline')">
+            <div class="gc-avatar">👩</div>
+            <div><div class="gc-num">1800-114-000</div><div class="gc-name">Women Helpline</div></div>
+          </div>
+          <div class="gc-item" onclick="quickWA('1098','Child Help')">
+            <div class="gc-avatar">👶</div>
+            <div><div class="gc-num">+91 1098</div><div class="gc-name">Child Helpline</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(name) {
+      document.querySelectorAll('.tab').forEach((t,i)=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      const tabs = ['message','call','video','group'];
+      document.querySelectorAll('.tab')[tabs.indexOf(name)].classList.add('active');
+      document.getElementById('tab-'+name).classList.add('active');
+    }
+
+    function updatePreview() {
+      const msg = document.getElementById('wa-message').value;
+      document.getElementById('preview-bubble').textContent = msg || 'Your message preview...';
+      document.getElementById('char-count').textContent = msg.length + ' / 500';
+      const now = new Date();
+      document.getElementById('preview-time').textContent =
+        now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }
+
+    function buildNumber(codeId, numId) {
+      const code = document.getElementById(codeId).value;
+      const num = document.getElementById(numId).value.trim().replace(/^0+/,'');
+      return { code, num, full: code + num };
+    }
+
+    function openWhatsApp() {
+      const { full } = buildNumber('country-code', 'wa-number');
+      if (!full) { alert('Enter a phone number.'); return; }
+      const msg = encodeURIComponent(document.getElementById('wa-message').value);
+      window.open(`https://wa.me/${full}?text=${msg}`, '_blank');
+    }
+
+    function waCall() {
+      const { full } = buildNumber('call-code', 'call-number');
+      if (!full) { alert('Enter a phone number.'); return; }
+      window.open(`https://wa.me/${full}`, '_blank');
+    }
+
+    function waVideo() {
+      const { full } = buildNumber('video-code', 'video-number');
+      if (!full) { alert('Enter a phone number.'); return; }
+      window.open(`https://wa.me/${full}`, '_blank');
+    }
+
+    function quickWA(num, name) {
+      const msg = encodeURIComponent(`Hi, I need help!`);
+      window.open(`https://wa.me/91${num}?text=${msg}`, '_blank');
+    }
+
+    updatePreview();
+  </script>
+
+</body>
+</html>

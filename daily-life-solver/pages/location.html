@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Location Finder — DailySolve</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    #map-embed { width:100%; height:300px; border-radius:12px; border:none; margin-top:16px; }
+    .coord-row { display:flex; gap:12px; }
+    .coord-row .input-group { flex:1; }
+    .nearby-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+    .nearby-btn {
+      display:flex; align-items:center; gap:10px;
+      background: var(--bg); border:1px solid var(--border);
+      border-radius:10px; padding:14px 16px; cursor:pointer;
+      color:var(--text); font-size:0.9rem; font-weight:500;
+      text-decoration:none; transition:all 0.2s;
+    }
+    .nearby-btn:hover { border-color:var(--accent); background:var(--surface2); }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="../index.html" class="logo">Daily<span>Solve</span></a>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="location.html" class="active">Location</a>
+      <a href="whatsapp.html">WhatsApp</a>
+      <a href="call.html">Call</a>
+    </nav>
+    <div class="header-cta" onclick="window.history.back()">← Back</div>
+  </header>
+
+  <div class="page-hero">
+    <h1>📍 Location Finder</h1>
+    <p>Detect your current location, share it with others, or find nearby services instantly.</p>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Detect Location -->
+    <div class="card">
+      <h3>🌐 Detect My Location</h3>
+      <button class="action-btn full" onclick="detectLocation()">📍 Get My Current Location</button>
+      <div class="result-box" id="loc-result">Your coordinates will appear here...</div>
+      <iframe id="map-embed" style="display:none"></iframe>
+    </div>
+
+    <!-- Share Location -->
+    <div class="card">
+      <h3>📤 Share My Location</h3>
+      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:18px;">Detect location first, then share via WhatsApp or copy the link.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="action-btn green" onclick="shareWhatsApp()">💬 Share on WhatsApp</button>
+        <button class="action-btn" onclick="copyLocation()">📋 Copy Link</button>
+      </div>
+    </div>
+
+    <!-- Find Nearby -->
+    <div class="card">
+      <h3>🔍 Find Nearby Services</h3>
+      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Click a category to find the nearest one in Google Maps.</p>
+      <div class="nearby-grid">
+        <a class="nearby-btn" onclick="findNearby('hospital')">🏥 Hospital</a>
+        <a class="nearby-btn" onclick="findNearby('police')">👮 Police Station</a>
+        <a class="nearby-btn" onclick="findNearby('pharmacy')">💊 Pharmacy</a>
+        <a class="nearby-btn" onclick="findNearby('restaurant')">🍽️ Restaurant</a>
+        <a class="nearby-btn" onclick="findNearby('atm')">🏧 ATM</a>
+        <a class="nearby-btn" onclick="findNearby('petrol station')">⛽ Petrol Station</a>
+        <a class="nearby-btn" onclick="findNearby('supermarket')">🛒 Supermarket</a>
+        <a class="nearby-btn" onclick="findNearby('fire station')">🚒 Fire Station</a>
+      </div>
+    </div>
+
+    <!-- Manual Search -->
+    <div class="card">
+      <h3>🗺️ Search Any Location</h3>
+      <div class="input-group">
+        <label>Enter place name or address</label>
+        <input type="text" id="search-loc" placeholder="e.g. Connaught Place, New Delhi" />
+      </div>
+      <button class="action-btn full" onclick="searchLocation()">🔍 Search on Map</button>
+    </div>
+
+  </div>
+
+  <script>
+    let userLat = null, userLng = null;
+
+    function detectLocation() {
+      const box = document.getElementById('loc-result');
+      box.textContent = '⏳ Detecting location...';
+      if (!navigator.geolocation) {
+        box.textContent = '❌ Geolocation is not supported by your browser.';
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        userLat = pos.coords.latitude.toFixed(6);
+        userLng = pos.coords.longitude.toFixed(6);
+        box.innerHTML = `✅ <strong>Latitude:</strong> ${userLat} &nbsp;|&nbsp; <strong>Longitude:</strong> ${userLng}<br/><br/>
+          <a href="https://maps.google.com/?q=${userLat},${userLng}" target="_blank" style="color:var(--accent)">📌 View on Google Maps</a>`;
+        const map = document.getElementById('map-embed');
+        map.src = `https://maps.google.com/maps?q=${userLat},${userLng}&z=15&output=embed`;
+        map.style.display = 'block';
+      }, err => {
+        box.textContent = '❌ Permission denied or location unavailable. Please allow location access.';
+      });
+    }
+
+    function shareWhatsApp() {
+      if (!userLat) { alert('Please detect your location first!'); return; }
+      const link = `https://maps.google.com/?q=${userLat},${userLng}`;
+      const msg = encodeURIComponent(`📍 My current location: ${link}`);
+      window.open(`https://wa.me/?text=${msg}`, '_blank');
+    }
+
+    function copyLocation() {
+      if (!userLat) { alert('Please detect your location first!'); return; }
+      const link = `https://maps.google.com/?q=${userLat},${userLng}`;
+      navigator.clipboard.writeText(link).then(() => alert('✅ Location link copied!'));
+    }
+
+    function findNearby(type) {
+      if (userLat && userLng) {
+        window.open(`https://www.google.com/maps/search/${encodeURIComponent(type)}/@${userLat},${userLng},14z`, '_blank');
+      } else {
+        window.open(`https://www.google.com/maps/search/${encodeURIComponent(type + ' near me')}`, '_blank');
+      }
+    }
+
+    function searchLocation() {
+      const q = document.getElementById('search-loc').value.trim();
+      if (!q) { alert('Enter a location to search.'); return; }
+      window.open(`https://maps.google.com/maps?q=${encodeURIComponent(q)}&output=embed`, '_blank');
+    }
+  </script>
+
+</body>
+</html>
